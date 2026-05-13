@@ -612,8 +612,7 @@ async function fillConversations() {
     realConvs = (json.notifications || [])
       .filter(n => n.tip === 'telegram_soru')
       .map((n, i) => {
-        const lines = (n.mesaj || '').split('\n');
-        const soru = (lines[0] || '').replace(/^S:\s*/, '');
+        const soru = (n.mesaj || '').replace(/^S:\s*/, '').split('\n')[0];
         const tarih = n.olusturma_tarihi ? new Date(n.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
         return {
           id: 'tg_' + n.id,

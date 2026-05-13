@@ -104,9 +104,22 @@ async def handle_update(update: dict) -> Optional[str]:
     chat_id  = str(message["chat"]["id"])
     user_text = message.get("text", "").strip()
     username  = message.get("from", {}).get("first_name", "Kullanıcı")
+    last_name = message.get("from", {}).get("last_name", "")
+    full_name = f"{username} {last_name}".strip()
 
     if not user_text:
         return None
+
+    # ── Her gelen mesajı DB'ye kaydet (dashboard'da görünsün) ─────────────────
+    try:
+        from services.db import execute as db_exec
+        db_exec(
+            """INSERT INTO BILDIRIMLER (tip, baslik, mesaj, hedef)
+               VALUES (?,?,?,?)""",
+            ("telegram_soru", full_name, user_text, chat_id)
+        )
+    except Exception:
+        pass
 
     # ── Hızlı Komutlar ────────────────────────────────────────────────────────
 
@@ -254,17 +267,6 @@ async def handle_update(update: dict) -> Optional[str]:
             reply_text = reply_text[:3700] + "\n\n_...devamı için dashboard'u ziyaret edin._"
 
         send_message(reply_text, chat_id=chat_id)
-
-        # Konuşmayı DB'ye kaydet (opsiyonel — dashboard'da gösterilebilir)
-        try:
-            from services.db import execute as db_exec
-            db_exec(
-                """INSERT OR IGNORE INTO BILDIRIMLER (tip, baslik, mesaj, hedef)
-                   VALUES (?,?,?,?)""",
-                ("telegram_soru", f"Bot: {username}", f"S: {user_text}\nY: {reply_text[:500]}", chat_id)
-            )
-        except Exception:
-            pass
 
         return reply_text
 
