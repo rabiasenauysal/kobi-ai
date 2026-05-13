@@ -1,0 +1,46 @@
+data
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Qdrant (artık kullanılmıyor)
+qdrant_rag_storage
+qdrant_storage
+
+# ChromaDB — runtime'da oluşturulur, commit'leme
+db/chroma_db/
+
+# SQLite WAL dosyaları (geçici)
+db/*.db-shm
+db/*.db-wal
+
+# Ortam değişkenleri
+.env
+.env.local
+
+# Google / Cloud servis hesabı anahtarları — ASLA commit'leme!
+*.json
+!package.json
+!package-lock.json
+
+# Geçici / hassas dosyalar
+gen-lang-client-*.json
+*service_account*.json
+*credentials*.json
+
+# Geliştirme artıkları
+trash
+source
+view_update.sql
+v0.0
+v0.1
+server_test.log
+*.log
+bos-kolonlar.txt
+kolon-isimleri.txt
+db_schema_report.txt
+db_schema_raw.json
+Dockerfile.pipeline
+docker-compose.yml
+static/index-dark.html

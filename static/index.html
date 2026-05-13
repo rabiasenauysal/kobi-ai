@@ -1,0 +1,1441 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KOBİ AI — Yapay Zeka Destekli Operasyon Platformu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg:           #FAF7F1;
+      --bg-2:         #F4EFE4;
+      --surface:      #FFFFFF;
+      --ink:          #0A0A0A;
+      --ink-soft:     #1A1612;
+      --text:         #14110D;
+      --text-2:       #6B655C;
+      --text-3:       #A8A299;
+      --line:         rgba(20,16,12,0.08);
+      --line-2:       rgba(20,16,12,0.14);
+      --line-3:       rgba(20,16,12,0.22);
+
+      --primary:      #FF5A1F;        /* neon orange */
+      --primary-2:    #FF7F00;
+      --primary-soft: #FFE8DC;
+      --magenta:      #FF1B6B;        /* electric accent */
+      --magenta-soft: #FFE0EC;
+      --lime:         #C4F03A;        /* neon lime */
+      --lime-soft:    #F1FFC5;
+
+      --success:      #00B36E;
+      --warn:         #F59E0B;
+      --danger:       #DC2626;
+    }
+
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .serif { font-family: 'Instrument Serif', serif; font-weight: 400; }
+    .serif-i { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── animations ──────────────────────────────────────────── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    @keyframes neon-pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(255,90,31,0.35), 0 0 24px -2px rgba(255,90,31,0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(255,90,31,0), 0 0 36px -2px rgba(255,90,31,0.45); }
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes bounce-dot {
+      0%,80%,100% { transform:scale(0.7); opacity:.4; }
+      40% { transform:scale(1.1); opacity:1; }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(40px, -30px); }
+    }
+    @keyframes blob {
+      0%,100% { border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%; }
+      50%     { border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%; }
+    }
+    .fadeUp { animation: fadeUp .35s ease-out both; }
+    .fadeIn { animation: fadeIn .25s ease-out both; }
+    .neon-pulse { animation: neon-pulse 2.2s ease-out infinite; }
+
+    /* ── primitives ──────────────────────────────────────────── */
+    .surface { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+    .surface-2 { background: var(--bg-2); border: 1px solid var(--line); border-radius: 16px; }
+    .ink-card { background: var(--ink); color: white; border-radius: 18px; }
+    .hover-lift { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    .hover-lift:hover { transform: translateY(-2px); border-color: var(--line-2); box-shadow: 0 12px 28px -16px rgba(20,16,12,0.18); }
+
+    /* ── buttons ─────────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--ink); color: white;
+      border-radius: 12px; padding: 10px 18px;
+      font-weight: 600; font-size: 14px;
+      transition: transform .12s ease, background .15s ease, box-shadow .15s ease;
+      position: relative;
+      border: 1px solid var(--ink);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -10px rgba(10,10,10,0.4); }
+
+    .btn-neon {
+      background: var(--primary); color: white;
+      border-radius: 12px; padding: 10px 18px;
+      font-weight: 600; font-size: 14px;
+      transition: transform .12s ease, filter .15s ease;
+      box-shadow: 0 6px 16px -6px rgba(255,90,31,0.5), inset 0 -2px 0 rgba(0,0,0,0.12);
+      border: 1px solid #E84A0F;
+    }
+    .btn-neon:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 24px -6px rgba(255,90,31,0.55); }
+
+    .btn-ghost {
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 16px;
+      font-weight: 500; font-size: 14px;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .btn-ghost:hover { background: var(--bg-2); border-color: var(--line-3); }
+
+    .btn-ink-ghost {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: white;
+      border-radius: 10px; padding: 8px 14px;
+      font-size: 13px; font-weight: 500;
+      transition: background .15s ease;
+    }
+    .btn-ink-ghost:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── pills / badges ──────────────────────────────────────── */
+    .pill {
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 12px; font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      color: var(--text-2);
+      cursor: pointer; transition: all .15s ease;
+      white-space: nowrap;
+    }
+    .pill:hover { color: var(--ink); border-color: var(--primary); background: var(--primary-soft); }
+    .pill-neon {
+      background: var(--ink); color: white;
+      border: 1px solid var(--ink);
+    }
+    .pill-neon:hover { background: var(--primary); border-color: var(--primary); color: white; }
+
+    .badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding: 3px 9px; border-radius: 6px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .badge-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .badge-orange { background: var(--primary-soft); color: #B43E0D; border:1px solid rgba(255,90,31,0.25); }
+    .badge-magenta { background: var(--magenta-soft); color: #B5044C; border:1px solid rgba(255,27,107,0.25); }
+    .badge-lime { background: var(--lime-soft); color: #4A6B00; border:1px solid rgba(132,180,0,0.35); }
+    .badge-success { background: #DDF7EC; color: #007A4B; border:1px solid rgba(0,179,110,0.25); }
+    .badge-warn { background: #FEF3C7; color: #92400E; border:1px solid rgba(245,158,11,0.3); }
+    .badge-danger { background: #FEE2E2; color: #991B1B; border:1px solid rgba(220,38,38,0.25); }
+    .badge-ink { background: var(--ink); color: white; }
+    .badge-neutral { background: var(--bg-2); color: var(--text-2); border:1px solid var(--line); }
+
+    /* ── nav items ───────────────────────────────────────────── */
+    .nav-item {
+      display:flex; align-items:center; gap: 11px;
+      padding: 9px 12px; border-radius: 10px;
+      color: var(--text-2); font-size: 13.5px; font-weight: 500;
+      cursor: pointer; transition: background .12s ease, color .12s ease;
+      position: relative;
+    }
+    .nav-item:hover { background: rgba(20,16,12,0.04); color: var(--ink); }
+    .nav-item.active {
+      background: var(--ink); color: white;
+    }
+    .nav-item.active .nav-count { background: rgba(255,255,255,0.12); color: white; }
+    .nav-count {
+      margin-left: auto;
+      font-size: 10px; font-weight: 600;
+      padding: 1px 6px; border-radius: 5px;
+      background: var(--bg-2); color: var(--text-2);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .nav-count-alert { background: var(--primary); color: white; }
+
+    /* ── scrollbars ──────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(20,16,12,0.12); border-radius: 8px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(20,16,12,0.22); }
+
+    /* ── data table ──────────────────────────────────────────── */
+    .data-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+    .data-table th {
+      text-align: left; padding: 10px 14px;
+      background: var(--bg-2);
+      color: var(--text-2); font-weight: 600;
+      border-bottom: 1px solid var(--line);
+      font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .data-table td {
+      padding: 12px 14px; color: var(--text);
+      border-bottom: 1px solid var(--line);
+      max-width: 240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .data-table tr:hover td { background: var(--bg-2); }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    /* ── input ───────────────────────────────────────────────── */
+    .input {
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+      font-size: 14px;
+    }
+    .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,90,31,0.12); }
+
+    /* ── progress ────────────────────────────────────────────── */
+    .progress { height: 6px; background: rgba(20,16,12,0.06); border-radius: 999px; overflow: hidden; }
+    .progress > div { height: 100%; border-radius: 999px; transition: width .4s ease; }
+
+    /* ── typing dots ─────────────────────────────────────────── */
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); display:inline-block; animation: bounce-dot 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: .15s; }
+    .typing-dot:nth-child(3) { animation-delay: .3s; }
+
+    /* ── logo orb ────────────────────────────────────────────── */
+    .logo-orb {
+      width: 38px; height: 38px;
+      background: var(--ink);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 4px 14px -4px rgba(10,10,10,0.25);
+    }
+    .logo-orb::after {
+      content:""; position: absolute; top: 6px; right: 6px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 0 rgba(255,90,31,0.55);
+      animation: neon-pulse 2s ease-out infinite;
+    }
+
+    /* ── neon accents ────────────────────────────────────────── */
+    .neon-text {
+      color: var(--primary);
+      text-shadow: 0 0 14px rgba(255,90,31,0.35);
+    }
+    .neon-underline {
+      position: relative;
+    }
+    .neon-underline::after {
+      content:""; position:absolute; left:0; right:0; bottom:-4px; height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--magenta));
+      border-radius: 999px;
+      filter: drop-shadow(0 0 6px rgba(255,90,31,0.5));
+    }
+
+    /* ── landing mesh ────────────────────────────────────────── */
+    .mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .mesh .blob {
+      position: absolute; filter: blur(80px); opacity: 0.55;
+      animation: blob 14s ease-in-out infinite, drift 18s ease-in-out infinite;
+    }
+    .mesh .b1 { width: 480px; height: 480px; background: var(--primary); top: -120px; left: -100px; }
+    .mesh .b2 { width: 540px; height: 540px; background: var(--magenta); bottom: -200px; right: -120px; opacity: 0.4; }
+    .mesh .b3 { width: 360px; height: 360px; background: var(--lime); left: 50%; top: 30%; transform: translate(-50%, -50%); opacity: 0.45; }
+    .grid-overlay {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(20,16,12,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,16,12,0.04) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    }
+
+    /* ── ticker ──────────────────────────────────────────────── */
+    .ticker-track { display: flex; gap: 48px; white-space: nowrap; animation: ticker 40s linear infinite; }
+
+    /* ── view routing ────────────────────────────────────────── */
+    .view { display: none; }
+    .view.active { display: block; }
+    .view-flex.active { display: flex; }
+
+    /* ── chat bubbles ────────────────────────────────────────── */
+    .bubble-user {
+      background: var(--ink); color: white;
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 14px; max-width: 100%;
+      font-size: 14px; line-height: 1.55;
+    }
+    .bubble-ai {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px 16px 16px 4px;
+      padding: 12px 16px;
+      font-size: 14px; line-height: 1.65; color: var(--text);
+    }
+    .bubble-ai strong { color: var(--ink); font-weight: 600; }
+    .bubble-customer {
+      background: var(--bg-2);
+      border-radius: 14px;
+      padding: 9px 13px;
+      font-size: 13.5px; line-height: 1.55;
+    }
+
+    /* sidebar collapsed */
+    aside.collapsed .sidebar-text { display: none; }
+    aside.collapsed .nav-item { justify-content: center; padding: 9px 0; }
+    aside.collapsed .nav-count { display: none; }
+    aside.collapsed { width: 64px !important; }
+
+    /* utility */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* live-bar shimmer */
+    .shimmer-line {
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s linear infinite;
+      height: 1px;
+    }
+
+    /* details summary */
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+
+    /* spin */
+    .animate-spin { animation: spin 1s linear infinite; }
+
+    /* WhatsApp / Telegram channel icons */
+    .channel-wa { background: #25D366; color: white; }
+    .channel-tg { background: #229ED9; color: white; }
+    .channel-web { background: var(--ink); color: white; }
+    .channel-ig { background: linear-gradient(135deg, #F58529, #DD2A7B, #8134AF); color: white; }
+
+    /* hero serif */
+    .hero-h1 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+    }
+    .hero-h1 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--primary);
+    }
+
+    /* gradient text */
+    .grad-text-orange {
+      background: linear-gradient(135deg, #FF5A1F 0%, #FF1B6B 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    /* card hover for feature grid */
+    .feature-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .feature-card:hover { transform: translateY(-3px); border-color: var(--line-3); box-shadow: 0 18px 36px -16px rgba(20,16,12,0.18); }
+
+    /* glass-on-cream */
+    .glass-cream {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid var(--line);
+    }
+
+    /* metric tile */
+    .metric-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+    .metric-tile .label { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .metric-tile .value { font-size: 28px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin-top: 4px; }
+    .metric-tile .delta { font-size: 12px; font-weight: 600; }
+
+    /* avatar */
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size: 12px; font-weight: 700; color: white;
+      flex-shrink: 0;
+    }
+
+    /* timeline step */
+    .step-dot { width: 22px; height: 22px; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+    .step-done { background: var(--ink); color: white; }
+    .step-active { background: var(--primary); color: white; box-shadow: 0 0 0 4px rgba(255,90,31,0.18); }
+    .step-pending { background: var(--bg-2); color: var(--text-3); border: 1px solid var(--line-2); }
+
+    /* send fab */
+    .send-fab {
+      width: 38px; height: 38px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius: 10px;
+      background: var(--primary); color: white;
+      transition: transform .12s ease, filter .15s ease;
+      box-shadow: 0 4px 12px -4px rgba(255,90,31,0.5);
+    }
+    .send-fab:hover { transform: scale(1.05); filter: brightness(1.06); }
+    .send-fab:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* small sparkline */
+    .spark { height: 32px; width: 100%; }
+
+    /* breathing rule */
+    section h1.page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+    section .page-sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+
+    /* msg-text */
+    .msg-text { color: var(--text); font-size: 14px; line-height: 1.65; }
+    .msg-text strong { color: var(--ink); font-weight: 600; }
+
+    /* topbar */
+    .topbar { background: rgba(250,247,241,0.85); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom: 1px solid var(--line); }
+
+    /* corner badge for AI auto-handled */
+    .ai-tag {
+      display:inline-flex; align-items:center; gap:4px;
+      padding: 2px 7px; border-radius: 5px;
+      font-size: 10px; font-weight: 700;
+      background: var(--ink); color: var(--lime);
+      letter-spacing: 0.04em;
+    }
+    .ai-tag::before {
+      content:""; width: 4px; height: 4px; border-radius:50%; background: var(--lime);
+      box-shadow: 0 0 4px var(--lime);
+    }
+
+    /* SVG icons should not shrink */
+    svg { flex-shrink: 0; }
+
+    /* selected conv row */
+    .conv-row { padding: 12px 14px; cursor: pointer; transition: background .12s ease; border-bottom: 1px solid var(--line); }
+    .conv-row:hover { background: var(--bg-2); }
+    .conv-row.active { background: var(--bg-2); border-left: 3px solid var(--primary); padding-left: 11px; }
+  </style>
+</head>
+<body class="overflow-hidden">
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LANDING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="landingView" class="view view-flex active fixed inset-0 z-30 flex-col overflow-y-auto">
+  <div class="mesh">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- top nav -->
+  <header class="relative z-10 flex items-center justify-between px-6 md:px-10 py-5">
+    <div class="flex items-center gap-3">
+      <div class="logo-orb">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <div class="text-[15px] font-bold tracking-tight">KOBİ AI</div>
+        <div class="text-[11px] text-[var(--text-2)] mono">v2.4 · KOBİ Operasyon Asistanı</div>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-7 text-sm text-[var(--text-2)]">
+      <a class="hover:text-[var(--ink)] transition" href="#features">Özellikler</a>
+      <a class="hover:text-[var(--ink)] transition" href="#">Entegrasyonlar</a>
+      <a class="hover:text-[var(--ink)] transition" href="#">Fiyatlandırma</a>
+      <a class="hover:text-[var(--ink)] transition" href="#">Belgeler</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <button onclick="openLogin()" class="btn-ghost hidden sm:inline-flex">Giriş</button>
+      <button onclick="enterDemo()" class="btn-neon">Demo →</button>
+    </div>
+  </header>
+
+  <!-- hero -->
+  <section class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 md:px-10 py-12 text-center">
+
+    <div class="pill" style="background: var(--ink); color: white; border-color: var(--ink);">
+      <span class="w-1.5 h-1.5 rounded-full bg-[color:var(--primary)] neon-pulse" style="animation-duration:1.6s"></span>
+      <span class="text-[12px]">Yeni: GPT-5 destekli SQL motoru</span>
+      <span class="text-[var(--text-3)] mono ml-1">[BETA]</span>
+    </div>
+
+    <h1 class="hero-h1 mt-7 fadeUp text-[clamp(2.6rem,7vw,5.5rem)] max-w-5xl" style="animation-delay:.05s">
+      KOBİ'niz için<br/>
+      <em>yapay zeka</em> asistanı.
+    </h1>
+
+    <p class="mt-7 fadeUp text-base md:text-lg text-[var(--text-2)] max-w-xl leading-relaxed" style="animation-delay:.15s">
+      Müşteri mesajları, siparişler, stok, kargo — hepsi tek platformda,
+      <span class="text-[var(--ink)] font-semibold">7/24 otomatik.</span>
+      İnsan müdahalesi olmadan iş akar.
+    </p>
+
+    <div class="mt-9 fadeUp flex flex-wrap items-center justify-center gap-3" style="animation-delay:.25s">
+      <button onclick="openLogin()" class="btn-primary inline-flex items-center gap-2 px-6 py-3.5 text-[15px]">
+        Yönetici Girişi
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+      </button>
+      <button onclick="enterDemo()" class="btn-neon inline-flex items-center gap-2 px-6 py-3.5 text-[15px]">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        Demo Olarak Dene
+      </button>
+    </div>
+
+    <div class="mt-4 fadeUp text-xs text-[var(--text-3)]" style="animation-delay:.32s">
+      Kayıt gerekmez · 2 dakikada kurulum · ERP & E-ticaret entegrasyonu
+    </div>
+
+    <!-- feature pills row -->
+    <div id="features" class="mt-16 fadeUp w-full max-w-6xl" style="animation-delay:.4s">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+        <div class="feature-card surface p-6 text-left">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--primary-soft); color: var(--primary)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <span class="mono text-[10px] text-[var(--text-3)]">01</span>
+          </div>
+          <h3 class="text-base font-semibold mb-1">Müşteri İletişimi</h3>
+          <p class="text-[13px] text-[var(--text-2)] leading-relaxed">WhatsApp, Telegram, web — doğal dilde anlar, kargoyu sorgular, müşteriye anlık cevap verir.</p>
+        </div>
+
+        <div class="feature-card surface p-6 text-left">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--magenta-soft); color: var(--magenta)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            </div>
+            <span class="mono text-[10px] text-[var(--text-3)]">02</span>
+          </div>
+          <h3 class="text-base font-semibold mb-1">Sipariş Takibi</h3>
+          <p class="text-[13px] text-[var(--text-2)] leading-relaxed">Bekleyen siparişler, hazırlanması gerekenler, dün gece düşenler — tek ekranda özet.</p>
+        </div>
+
+        <div class="feature-card surface p-6 text-left">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--lime-soft); color: #5C7A00">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1"/></svg>
+            </div>
+            <span class="mono text-[10px] text-[var(--text-3)]">03</span>
+          </div>
+          <h3 class="text-base font-semibold mb-1">Kargo Yönetimi</h3>
+          <p class="text-[13px] text-[var(--text-2)] leading-relaxed">Gecikmeleri önceden tespit eder, müşteri şikayet etmeden bildirim atar.</p>
+        </div>
+
+        <div class="feature-card surface p-6 text-left">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #FEF3C7; color: #B45309">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <span class="mono text-[10px] text-[var(--text-3)]">04</span>
+          </div>
+          <h3 class="text-base font-semibold mb-1">Stok & Envanter</h3>
+          <p class="text-[13px] text-[var(--text-2)] leading-relaxed">Kritik eşikte tedarikçiye otomatik taslak mail. Pijama Takımı kritik seviyeye düşmeden haber verir.</p>
+        </div>
+
+        <div class="feature-card surface p-6 text-left">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #DDF7EC; color: #007A4B">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+            </div>
+            <span class="mono text-[10px] text-[var(--text-3)]">05</span>
+          </div>
+          <h3 class="text-base font-semibold mb-1">İş Akışı & Görevler</h3>
+          <p class="text-[13px] text-[var(--text-2)] leading-relaxed">Her sabah 08:00'de depoya paket listesi, kargoya rota — kimse kimseyi aramaz.</p>
+        </div>
+
+        <div class="feature-card ink-card p-6 text-left relative overflow-hidden">
+          <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full" style="background: radial-gradient(circle, rgba(255,90,31,0.45), transparent 70%); filter:blur(8px)"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--primary); color: white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <span class="mono text-[10px] text-[var(--text-3)]">06</span>
+              <span class="ai-tag ml-auto">AI</span>
+            </div>
+            <h3 class="text-base font-semibold mb-1 text-white">Analitik & İçgörü</h3>
+            <p class="text-[13px] text-white/65 leading-relaxed">3 aylık satıştan haftalık tahmin. "Pijama Takımı Salı, Sweat Perşembe patlayacak" der.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- live ticker -->
+    <div class="mt-14 fadeUp w-full max-w-6xl" style="animation-delay:.5s">
+      <div class="ink-card overflow-hidden">
+        <div class="flex items-center gap-6 px-6 py-4">
+          <div class="shrink-0 flex items-center gap-2 text-xs text-white/70 uppercase tracking-widest">
+            <span class="w-1.5 h-1.5 rounded-full bg-[color:var(--lime)] neon-pulse" style="animation-duration:1.4s; box-shadow: 0 0 8px var(--lime)"></span>
+            Canlı
+          </div>
+          <div class="flex-1 overflow-hidden">
+            <div class="ticker-track text-sm text-white/80">
+              <div class="flex items-center gap-6">
+                <span><span class="mono text-[color:var(--primary)]" id="tickerOrders">—</span> sipariş bugün</span>
+                <span class="text-white/30">·</span>
+                <span><span class="mono text-[color:var(--lime)]" id="tickerStock">—</span> kritik stok uyarısı</span>
+                <span class="text-white/30">·</span>
+                <span><span class="mono text-[color:var(--primary)]" id="tickerCargo">—</span> kargo gecikmiş</span>
+                <span class="text-white/30">·</span>
+                <span>AI destekli otomasyon <span class="mono text-[color:var(--lime)]">aktif</span></span>
+                <span class="text-white/30">·</span>
+              </div>
+              <div class="flex items-center gap-6">
+                <span><span class="mono text-[color:var(--primary)]" id="tickerOrders2">—</span> sipariş bugün</span>
+                <span class="text-white/30">·</span>
+                <span><span class="mono text-[color:var(--lime)]" id="tickerStock2">—</span> kritik stok uyarısı</span>
+                <span class="text-white/30">·</span>
+                <span><span class="mono text-[color:var(--primary)]" id="tickerCargo2">—</span> kargo gecikmiş</span>
+                <span class="text-white/30">·</span>
+                <span>AI destekli otomasyon <span class="mono text-[color:var(--lime)]">aktif</span></span>
+                <span class="text-white/30">·</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- integrations -->
+    <div class="mt-14 mb-10 fadeUp w-full max-w-4xl" style="animation-delay:.55s">
+      <div class="text-center text-[11px] text-[var(--text-3)] uppercase tracking-[0.2em] mb-5">Entegre Çalıştığımız Sistemler</div>
+      <div class="flex items-center justify-center flex-wrap gap-x-10 gap-y-4 text-[var(--text-2)]">
+        <div class="mono text-base font-semibold">ERP</div>
+        <div class="mono text-base font-semibold">Trendyol</div>
+        <div class="mono text-base font-semibold">Hepsiburada</div>
+        <div class="mono text-base font-semibold">N11</div>
+        <div class="mono text-base font-semibold">Shopify</div>
+        <div class="mono text-base font-semibold">WhatsApp</div>
+        <div class="mono text-base font-semibold">Telegram</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     LOGIN MODAL
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="loginModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4" style="background: rgba(20,16,12,0.45); backdrop-filter: blur(8px);">
+  <div class="surface p-7 w-full max-w-md fadeUp" style="border-radius:18px">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="logo-orb" style="width:30px;height:30px;border-radius:9px"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+        <div class="font-semibold">Giriş Yap</div>
+      </div>
+      <button onclick="closeLogin()" class="text-[var(--text-3)] hover:text-[var(--ink)] p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <p class="text-sm text-[var(--text-2)] mb-6">Nasıl devam etmek istiyorsunuz?</p>
+
+    <div class="space-y-3">
+      <button onclick="enterAsAdmin()" class="w-full py-4 rounded-2xl text-left px-5 flex items-center gap-4 transition hover:scale-[1.01]" style="background: var(--ink); color: white;">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,90,31,0.25)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <div>
+          <div class="font-semibold text-base">Yönetici Paneli</div>
+          <div class="text-xs opacity-60 mt-0.5">Tüm veriler, analitik, AI chat</div>
+        </div>
+        <svg class="w-4 h-4 ml-auto opacity-40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+
+      <button onclick="enterAsCustomer()" class="w-full py-4 rounded-2xl text-left px-5 flex items-center gap-4 transition hover:scale-[1.01]" style="background: var(--bg-2); border: 1px solid var(--line-2);">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background: var(--primary-soft)">
+          <svg class="w-5 h-5" style="color:var(--primary)" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <div>
+          <div class="font-semibold text-base text-[var(--ink)]">Müşteri Destek</div>
+          <div class="text-xs text-[var(--text-3)] mt-0.5">Sipariş sorgula, iade, kargo takip</div>
+        </div>
+        <svg class="w-4 h-4 ml-auto text-[var(--text-3)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DASHBOARD
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="dashboardView" class="view view-flex h-screen w-screen overflow-hidden">
+
+  <!-- ── Sidebar ────────────────────────────────────────────────── -->
+  <aside id="sidebar" class="w-64 shrink-0 flex flex-col transition-all duration-200" style="background: var(--surface); border-right: 1px solid var(--line);">
+
+    <div class="px-5 py-5 flex items-center gap-3 border-b border-[var(--line)]">
+      <div class="logo-orb"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+      <div class="sidebar-text flex-1 min-w-0">
+        <div class="font-bold text-[15px] leading-tight">KOBİ AI</div>
+        <div class="text-[10px] text-[var(--text-3)] mono uppercase tracking-wider">Yönetici Paneli</div>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <div class="text-[10px] font-bold text-[var(--text-3)] uppercase tracking-[0.18em] px-3 mb-2 sidebar-text">Operasyon</div>
+
+      <div class="nav-item active" data-tab="overview" onclick="switchTab('overview')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span class="sidebar-text">Genel Bakış</span>
+      </div>
+
+      <div class="nav-item" data-tab="comms" onclick="switchTab('comms')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span class="sidebar-text">Müşteri Mesajları</span>
+        <span class="nav-count nav-count-alert sidebar-text">14</span>
+      </div>
+
+      <div class="nav-item" data-tab="orders" onclick="switchTab('orders')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span class="sidebar-text">Siparişler</span>
+        <span id="navCountOrders" class="nav-count sidebar-text">—</span>
+      </div>
+
+      <div class="nav-item" data-tab="cargo" onclick="switchTab('cargo')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1"/></svg>
+        <span class="sidebar-text">Kargo</span>
+        <span id="navCountCargo" class="nav-count nav-count-alert sidebar-text">—</span>
+      </div>
+
+      <div class="nav-item" data-tab="stock" onclick="switchTab('stock')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <span class="sidebar-text">Stok</span>
+        <span id="navCountStock" class="nav-count nav-count-alert sidebar-text">—</span>
+      </div>
+
+      <div class="nav-item" data-tab="tasks" onclick="switchTab('tasks')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        <span class="sidebar-text">Görev Akışları</span>
+      </div>
+
+      <div class="nav-item" data-tab="analytics" onclick="switchTab('analytics')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <span class="sidebar-text">Analitik & İçgörü</span>
+      </div>
+
+      <div class="text-[10px] font-bold text-[var(--text-3)] uppercase tracking-[0.18em] px-3 mb-2 mt-5 sidebar-text">Asistan</div>
+
+      <div class="nav-item" data-tab="chat" onclick="switchTab('chat')">
+        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <span class="sidebar-text">AI Chat</span>
+        <span class="ai-tag sidebar-text" style="margin-left:auto">YENİ</span>
+      </div>
+
+      <div class="text-[10px] font-bold text-[var(--text-3)] uppercase tracking-[0.18em] px-3 mb-2 mt-5 sidebar-text">Sohbet Geçmişi</div>
+      <div id="historyList" class="space-y-0.5">
+        <div class="text-[11px] text-[var(--text-3)] px-3 py-2 sidebar-text">Geçmiş yükleniyor…</div>
+      </div>
+    </nav>
+
+    <!-- user pod -->
+    <div class="px-3 py-3 border-t border-[var(--line)]">
+      <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--bg-2)] transition cursor-pointer">
+        <div class="avatar" style="background: linear-gradient(135deg, var(--primary), var(--magenta))">YD</div>
+        <div class="sidebar-text flex-1 min-w-0">
+          <div class="text-[13px] font-semibold truncate" id="userName">Yönetici</div>
+          <div class="text-[11px] text-[var(--text-3)] truncate" id="userEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1d797870725d7074766f72337c74">[email&#160;protected]</a></div>
+        </div>
+        <button onclick="logout()" class="sidebar-text text-[var(--text-3)] hover:text-[var(--danger)] p-1.5 rounded-lg hover:bg-[var(--bg-2)] transition" title="Çıkış">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </button>
+      </div>
+      <div class="mt-1 flex items-center gap-2 px-3 py-1 text-[10px] text-[var(--text-3)]">
+        <div id="statusDot" class="w-1.5 h-1.5 rounded-full" style="background: var(--text-3)"></div>
+        <span id="statusText" class="sidebar-text mono uppercase tracking-wider">bağlanıyor…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main ───────────────────────────────────────────────────── -->
+  <main class="flex-1 flex flex-col min-w-0">
+
+    <!-- topbar -->
+    <header class="topbar h-14 px-6 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="text-[var(--text-2)] hover:text-[var(--ink)] p-1.5 rounded-lg hover:bg-[var(--bg-2)]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <nav class="flex items-center gap-2 text-sm">
+          <span class="text-[var(--text-3)]">KOBİ AI</span>
+          <svg class="w-3.5 h-3.5 text-[var(--text-3)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span id="headerTitle" class="text-[var(--ink)] font-semibold">Genel Bakış</span>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs" style="background: var(--lime-soft); border: 1px solid rgba(132,180,0,0.35);">
+          <span class="w-1.5 h-1.5 rounded-full" style="background:#84B400; box-shadow: 0 0 6px var(--lime);"></span>
+          <span class="font-semibold" style="color:#4A6B00">Canlı veri</span>
+          <span class="text-[var(--text-3)] mono" id="liveUpdated">şimdi</span>
+        </div>
+        <button class="btn-ghost px-3 py-1.5 text-xs flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span>3</span>
+        </button>
+        <button onclick="toggleAnalytical()" id="analyticalBtn" class="btn-ghost px-3 py-1.5 text-xs flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Analitik <span id="analyticalLabel" class="text-[var(--text-3)]">Kapalı</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-hidden relative">
+
+      <!-- ╔══ OVERVIEW ═════════════════════════════════════════════ -->
+      <section id="tab-overview" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7">
+        <div class="max-w-7xl mx-auto">
+
+          <!-- greeting + AI brief -->
+          <div class="mb-7 flex items-end justify-between flex-wrap gap-4">
+            <div>
+              <h1 class="page-title flex items-center gap-3 flex-wrap">
+                <span>İyi günler,</span>
+                <span class="serif-i grad-text-orange text-3xl" id="greetingName">Yönetici</span>
+              </h1>
+              <p class="page-sub">13 Mayıs 2026, Salı · 6 alan, tek panel.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn-ghost text-xs px-3 py-2">Bugün</button>
+              <button class="btn-ghost text-xs px-3 py-2">Bu Hafta</button>
+              <button class="btn-primary text-xs px-3 py-2">Bu Ay</button>
+            </div>
+          </div>
+
+          <!-- AI morning brief -->
+          <div class="ink-card p-6 mb-6 relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-56 h-56 rounded-full" style="background: radial-gradient(circle, rgba(255,90,31,0.4), transparent 65%); filter:blur(20px)"></div>
+            <div class="absolute -left-8 bottom-0 w-40 h-40 rounded-full" style="background: radial-gradient(circle, rgba(255,27,107,0.25), transparent 70%); filter:blur(20px)"></div>
+            <div class="relative">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="ai-tag">SABAH BRIFLEMESI</span>
+                <span id="morningBriefTime" class="text-xs text-white/50 mono">08:00 · Otomatik</span>
+              </div>
+              <p id="morningBriefText" class="text-[17px] md:text-[19px] leading-snug text-white max-w-3xl">
+                Veriler yükleniyor…
+              </p>
+              <div class="flex items-center gap-2 mt-5 flex-wrap">
+                <button onclick="switchTab('cargo')" class="btn-ink-ghost flex items-center gap-1.5">Kargoları gör <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                <button onclick="switchTab('stock')" class="btn-ink-ghost flex items-center gap-1.5">Taslak maili aç <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+                <button onclick="switchTab('tasks')" class="btn-ink-ghost flex items-center gap-1.5">Bugünkü görevler <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI tiles -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <div class="metric-tile relative overflow-hidden">
+              <div class="absolute right-3 top-3 text-[var(--text-3)]"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg></div>
+              <div class="label">Bugün Sipariş</div>
+              <div class="value" id="kpiOrders">—</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="delta text-[var(--success)]">↑ 12% dün</span>
+                <svg class="spark w-16 h-6" viewBox="0 0 64 24" fill="none"><polyline points="0,18 8,14 16,16 24,10 32,12 40,6 48,8 56,4 64,2" stroke="var(--primary)" stroke-width="1.5"/></svg>
+              </div>
+            </div>
+            <div class="metric-tile relative overflow-hidden">
+              <div class="absolute right-3 top-3 text-[var(--text-3)]"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
+              <div class="label">AI Otomatik Cevap</div>
+              <div class="value">87<span class="text-base text-[var(--text-2)]">%</span></div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="delta" style="color:var(--magenta)">23 / 26 mesaj</span>
+                <span class="badge badge-lime">AI</span>
+              </div>
+            </div>
+            <div class="metric-tile relative overflow-hidden">
+              <div class="absolute right-3 top-3 text-[var(--text-3)]"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+              <div class="label">Kritik Stok</div>
+              <div class="value" id="kpiStock" style="color:var(--primary)">—</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="delta text-[var(--text-2)]">3 acil yenileme</span>
+                <span class="badge badge-orange">UYARI</span>
+              </div>
+            </div>
+            <div class="metric-tile relative overflow-hidden">
+              <div class="absolute right-3 top-3 text-[var(--text-3)]"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div>
+              <div class="label">Geciken Kargo</div>
+              <div class="value" id="kpiDelayed">—</div>
+              <div class="flex items-center justify-between mt-2">
+                <span class="delta text-[var(--danger)]">48+ saat</span>
+                <span class="badge badge-danger">GECİKMİŞ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2-col grid: recent activity + tasks -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- recent customer messages -->
+            <div class="surface p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="font-semibold">Son Müşteri Etkileşimleri</div>
+                  <div class="text-xs text-[var(--text-2)]">AI otomatik cevapladı, sadece bilgi verilmesi gerekenleri görüyorsunuz</div>
+                </div>
+                <button onclick="switchTab('comms')" class="text-xs text-[var(--primary)] font-medium hover:underline">Tümü →</button>
+              </div>
+              <div id="overviewComms" class="divide-y" style="--tw-divide-opacity:1"></div>
+            </div>
+
+            <!-- today's tasks preview -->
+            <div class="surface p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div class="font-semibold">Bugün Yapılacak</div>
+                <button onclick="switchTab('tasks')" class="text-xs text-[var(--primary)] font-medium hover:underline">Hepsi →</button>
+              </div>
+              <div id="overviewTasks" class="space-y-2"></div>
+            </div>
+          </div>
+
+          <!-- sales trend + channel -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+            <div class="surface p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-1">
+                <div class="font-semibold">Satış Trendi</div>
+                <div class="text-right">
+                  <div id="overviewTotalCiro" class="text-xl font-bold text-[var(--ink)]">—</div>
+                  <div class="text-xs" style="color:var(--success)">son 30 gün toplam ciro</div>
+                </div>
+              </div>
+              <div class="text-xs text-[var(--text-2)] mb-3">Aylık ciro · tüm kanallar</div>
+              <div class="h-56"><canvas id="overviewTrend"></canvas></div>
+            </div>
+            <div class="surface p-5">
+              <div class="font-semibold mb-1">Kanal Dağılımı</div>
+              <div class="text-xs text-[var(--text-2)] mb-4">Bu ay</div>
+              <div class="h-40 mb-3"><canvas id="overviewChannel"></canvas></div>
+              <div class="space-y-1.5 text-xs" id="overviewChannelList">
+                <div class="text-[var(--text-2)]">Yükleniyor…</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ╔══ COMMS ════════════════════════════════════════════════ -->
+      <section id="tab-comms" class="tab-panel absolute inset-0 flex hidden">
+        <!-- conversation list -->
+        <div class="w-80 shrink-0 flex flex-col border-r border-[var(--line)]" style="background: var(--surface)">
+          <div class="p-4 border-b border-[var(--line)]">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-bold text-[15px]">Müşteri Mesajları</h2>
+              <span class="badge badge-lime">14 yeni</span>
+            </div>
+            <div class="relative">
+              <svg class="w-4 h-4 absolute left-3 top-2.5 text-[var(--text-3)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input id="convSearch" class="input pl-9 w-full text-sm py-2" placeholder="Ara…" oninput="searchConvs()">
+            </div>
+            <div class="flex items-center gap-1 mt-3 text-xs">
+              <button data-filter="all"   class="comms-filter-btn pill" style="background:var(--ink);color:white;border-color:var(--ink)" onclick="filterComms('all')">Tümü <span class="text-white/50">26</span></button>
+              <button data-filter="human" class="comms-filter-btn pill" onclick="filterComms('human')">İnsan gerek <span class="text-[var(--primary)]">3</span></button>
+              <button data-filter="ai"    class="comms-filter-btn pill" onclick="filterComms('ai')">AI çözdü</button>
+            </div>
+          </div>
+          <div id="convList" class="flex-1 overflow-y-auto"></div>
+        </div>
+
+        <!-- thread -->
+        <div class="flex-1 flex flex-col min-w-0" style="background: var(--bg)">
+          <div class="topbar h-14 px-5 flex items-center justify-between shrink-0" id="threadHeader">
+            <!-- filled by JS -->
+          </div>
+          <div id="threadBody" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+          <div class="px-5 py-4 border-t border-[var(--line)]" style="background: var(--surface)">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="ai-tag">AI MODU AKTİF</span>
+              <span class="text-xs text-[var(--text-2)]">Mesajlar otomatik yanıtlanıyor — devralmak için yaz</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <input id="threadInput" class="input flex-1" placeholder="Devral ve yaz…">
+              <button class="send-fab"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ╔══ ORDERS ═══════════════════════════════════════════════ -->
+      <section id="tab-orders" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7 hidden">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="page-title">Siparişler</h1>
+              <p class="page-sub">Tüm kanallar · canlı güncellenen liste</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="relative">
+                <svg class="w-4 h-4 absolute left-3 top-2.5 text-[var(--text-3)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input id="orderSearch" class="input pl-9 w-64 text-sm py-2" placeholder="Sipariş, müşteri ara…" oninput="searchOrders()">
+              </div>
+              <button class="btn-ghost text-xs" onclick="searchOrders()">Filtre</button>
+              <button class="btn-neon text-xs" onclick="exportOrders()">Dışa Aktar</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="metric-tile"><div class="label">Son Gün</div><div id="ordKpiToday" class="value">—</div><div class="delta text-[var(--success)] mt-1" id="ordKpiDate">yükleniyor</div></div>
+            <div class="metric-tile"><div class="label">Son 7 Gün</div><div id="ordKpiWeek" class="value">—</div><div class="delta text-[var(--success)] mt-1">sipariş</div></div>
+            <div class="metric-tile"><div class="label">Bekleyen</div><div id="ordKpiBekleyen" class="value" style="color:var(--primary)">—</div><div class="delta text-[var(--text-2)] mt-1">hazırlanıyor</div></div>
+            <div class="metric-tile"><div class="label">Teslim Edildi</div><div id="ordKpiTeslim" class="value" style="color:var(--success)">—</div><div class="delta text-[var(--text-2)] mt-1">son 30 gün</div></div>
+          </div>
+
+          <div class="flex items-center gap-1 mb-4 border-b border-[var(--line)]">
+            <button data-durum="" class="order-filter-tab px-4 py-2.5 text-sm font-semibold border-b-2 text-[var(--ink)] transition" style="border-bottom-color:var(--primary)" onclick="filterOrders('')">Tümü <span id="tabCountAll" class="text-[var(--text-3)] text-xs ml-1">—</span></button>
+            <button data-durum="Hazırlanıyor" class="order-filter-tab px-4 py-2.5 text-sm text-[var(--text-2)] hover:text-[var(--ink)] border-b-2 border-transparent transition" onclick="filterOrders('Hazırlanıyor')">Hazırlanıyor <span id="tabCountPending" class="text-[var(--text-3)] text-xs ml-1">—</span></button>
+            <button data-durum="Kargoya Verildi" class="order-filter-tab px-4 py-2.5 text-sm text-[var(--text-2)] hover:text-[var(--ink)] border-b-2 border-transparent transition" onclick="filterOrders('Kargoya Verildi')">Kargoda <span id="tabCountCargo" class="text-[var(--text-3)] text-xs ml-1">—</span></button>
+            <button data-durum="Teslim Edildi" class="order-filter-tab px-4 py-2.5 text-sm text-[var(--text-2)] hover:text-[var(--ink)] border-b-2 border-transparent transition" onclick="filterOrders('Teslim Edildi')">Teslim <span id="tabCountDone" class="text-[var(--text-3)] text-xs ml-1">—</span></button>
+            <button data-durum="İptal" class="order-filter-tab px-4 py-2.5 text-sm text-[var(--text-2)] hover:text-[var(--ink)] border-b-2 border-transparent transition" onclick="filterOrders('İptal')">İptal <span id="tabCountCancel" class="text-[var(--text-3)] text-xs ml-1">—</span></button>
+          </div>
+
+          <div class="surface overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="data-table">
+                <thead><tr><th>Sipariş</th><th>Müşteri</th><th>Kanal</th><th>Tutar</th><th>Durum</th><th>Tarih</th><th></th></tr></thead>
+                <tbody id="ordersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ╔══ CARGO ════════════════════════════════════════════════ -->
+      <section id="tab-cargo" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7 hidden">
+        <div class="max-w-6xl mx-auto">
+          <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="page-title">Kargo Yönetimi</h1>
+              <p class="page-sub">Geciken siparişleri AI otomatik tespit eder, müşteriyi şikayet etmeden bilgilendirir</p>
+            </div>
+            <button class="btn-ghost text-xs">Toplu güncelle</button>
+          </div>
+
+          <!-- delayed banner -->
+          <div id="cargoAlert" class="ink-card p-5 mb-6 relative overflow-hidden">
+            <div class="absolute -right-8 -top-8 w-44 h-44 rounded-full" style="background: radial-gradient(circle, rgba(255,90,31,0.3), transparent 70%); filter:blur(18px)"></div>
+            <div class="relative flex items-center gap-4 flex-wrap">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background: var(--primary)">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div class="flex-1">
+                <div id="cargoAlertText" class="font-semibold text-white mb-0.5">Gecikmiş kargolar yükleniyor…</div>
+                <div class="text-xs text-white/65">AI gecikmeyi tespit etti · müşteriye otomatik bilgi gönderebilirsiniz</div>
+              </div>
+              <button class="btn-neon" onclick="notifyAllDelayed()">Tümüne Bildirim Gönder</button>
+            </div>
+          </div>
+
+          <div class="space-y-3" id="cargoList"></div>
+        </div>
+      </section>
+
+
+      <!-- ╔══ STOCK ════════════════════════════════════════════════ -->
+      <section id="tab-stock" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7 hidden">
+        <div class="max-w-6xl mx-auto">
+          <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="page-title">Stok & Envanter</h1>
+              <p class="page-sub">Kritik eşikte AI tedarikçiye taslak mail hazırlar — son 90 günü analiz ederek miktar önerir</p>
+            </div>
+            <button onclick="openSupplierMail()" class="btn-neon inline-flex items-center gap-2 text-xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Tedarikçi Maili Oluştur
+            </button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="metric-tile"><div class="label">Kritik</div><div class="value" style="color:var(--danger)" id="stockKritik">—</div><div class="text-[11px] text-[var(--text-3)] mt-1">stoksuz risk</div></div>
+            <div class="metric-tile"><div class="label">Düşük</div><div class="value" style="color:var(--warn)" id="stockDusuk">—</div><div class="text-[11px] text-[var(--text-3)] mt-1">eşiğe yakın</div></div>
+            <div class="metric-tile"><div class="label">Sağlıklı</div><div class="value" style="color:var(--success)" id="stockSaglikli">—</div><div class="text-[11px] text-[var(--text-3)] mt-1">yeterli</div></div>
+          </div>
+
+          <div class="surface p-2" id="stockList"></div>
+        </div>
+      </section>
+
+      <!-- order detail modal -->
+      <div id="orderDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center px-4" style="background:rgba(20,16,12,0.45);backdrop-filter:blur(8px)" onclick="if(event.target===this)closeOrderDetail()">
+        <div class="surface p-7 w-full max-w-lg fadeUp" style="border-radius:18px">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <div class="text-xs text-[var(--text-3)] mb-0.5">Sipariş Detayı</div>
+              <div class="text-lg font-bold mono" id="orderDetailNo">—</div>
+            </div>
+            <button onclick="closeOrderDetail()" class="w-9 h-9 rounded-xl hover:bg-[var(--bg-2)] flex items-center justify-center transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div id="orderDetailBody" class="space-y-2"></div>
+          <div class="mt-5 flex gap-2">
+            <button onclick="closeOrderDetail()" class="btn-ghost flex-1">Kapat</button>
+            <button class="btn-neon flex-1" onclick="switchTab('chat');closeOrderDetail()">AI ile Analiz Et</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- supplier mail drawer -->
+      <div id="supplierDrawer" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0" style="background:rgba(20,16,12,0.45); backdrop-filter:blur(6px)" onclick="closeSupplierMail()"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-xl bg-[var(--surface)] flex flex-col fadeUp" style="animation-duration:.25s">
+          <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1"><span class="ai-tag">AI HAZIRLADI</span> <span class="text-xs text-[var(--text-2)]">14:32 · 90 günlük satış analizi</span></div>
+              <h3 class="font-semibold text-lg">Tedarikçi Sipariş Maili</h3>
+            </div>
+            <button onclick="closeSupplierMail()" class="text-[var(--text-3)] hover:text-[var(--ink)] p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-5 space-y-4">
+            <div>
+              <div class="text-xs font-medium text-[var(--text-2)] mb-1.5">Alıcı</div>
+              <input class="input w-full text-sm" value="siparis@yesiltarim-tedarik.com">
+            </div>
+            <div>
+              <div class="text-xs font-medium text-[var(--text-2)] mb-1.5">Konu</div>
+              <input class="input w-full text-sm" value="Sipariş Talebi — 13.05.2026 · Acil Yenileme">
+            </div>
+            <div>
+              <div class="text-xs font-medium text-[var(--text-2)] mb-1.5">Mesaj</div>
+              <textarea id="supplierMailBody" class="input w-full text-sm font-medium" rows="14">Merhaba,
+
+Aşağıdaki kalemler için stok yenileme talebimizi iletiyoruz. Önerilen miktarlar, son 90 günlük satış ortalamasına ve 2 haftalık hareket payına göre AI tarafından hesaplanmıştır.
+
+• Kadın Pijama Takımı — 200 ad  (mevcut: 12 ad / min 50 ad)
+• Erkek Slim Fit Gömlek — 150 ad (mevcut: 18 ad / min 40 ad)
+• Kadın Yüksek Bel Tayt — 120 ad (mevcut: 24 ad / min 60 ad)
+
+Teslimat: Mümkünse Perşembe öğleden önce.
+İletişim: 0532 *** ** **
+
+Saygılarımızla,
+İşletme Adınız</textarea>
+            </div>
+            <div class="surface-2 p-3 text-xs text-[var(--text-2)]">
+              <strong class="text-[var(--ink)]">AI Notu:</strong> Pijama Takımı için talep 90 günde haftada ortalama 47 ad arttı. 200 ad sipariş, 2 haftalık güvenli stoğu hedefler.
+            </div>
+          </div>
+          <div class="p-4 border-t border-[var(--line)] flex items-center gap-2">
+            <button class="btn-ghost flex-1">Kaydet (Taslak)</button>
+            <button class="btn-neon flex-1">Gönder</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ╔══ TASKS ════════════════════════════════════════════════ -->
+      <section id="tab-tasks" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7 hidden">
+        <div class="max-w-5xl mx-auto">
+          <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="page-title">Görev Akışları</h1>
+              <p class="page-sub">Her sabah 08:00'de AI günü analiz eder, ekibe otomatik dağıtır</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="sendMorningTasks()" class="btn-neon text-xs">📤 Sabah Görevi Gönder</button>
+              <button onclick="sendDailyReport()" class="btn-ink-ghost text-xs">📊 Günlük Rapor</button>
+            </div>
+          </div>
+
+          <!-- automation strip -->
+          <div class="surface p-4 mb-6 flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+              <div class="logo-orb" style="width:32px;height:32px;border-radius:9px"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+              <div>
+                <div class="text-sm font-semibold">Sabah otomasyonu aktif — her gün 08:00</div>
+                <div id="taskAutomationText" class="text-xs text-[var(--text-2)] mono">yükleniyor...</div>
+              </div>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+              <span id="schedulerStatus" class="text-xs text-[var(--success)] mono">🟢 çalışıyor</span>
+            </div>
+          </div>
+
+          <!-- by assignee — dinamik -->
+          <div id="taskRoleCards" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+            <!-- JS ile doldurulur -->
+            <div class="surface p-4 flex items-center justify-center text-[var(--text-3)] text-sm">yükleniyor…</div>
+          </div>
+
+          <div class="surface p-5">
+            <div class="font-semibold mb-3">Görev Özeti</div>
+            <div class="grid grid-cols-3 gap-3 text-sm">
+              <div class="surface-2 text-center p-4"><div id="taskStatTamamlanan" class="text-2xl font-bold" style="color:var(--success)">—</div><div class="text-[11px] text-[var(--text-2)] mt-1">Tamamlanan</div></div>
+              <div class="surface-2 text-center p-4"><div id="taskStatBekleyen" class="text-2xl font-bold" style="color:var(--warn)">—</div><div class="text-[11px] text-[var(--text-2)] mt-1">Bekleyen</div></div>
+              <div class="surface-2 text-center p-4"><div id="taskStatGeciken" class="text-2xl font-bold" style="color:var(--danger)">—</div><div class="text-[11px] text-[var(--text-2)] mt-1">Geciken</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ╔══ ANALYTICS ════════════════════════════════════════════ -->
+      <section id="tab-analytics" class="tab-panel absolute inset-0 overflow-y-auto px-6 py-7 hidden">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-end justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h1 class="page-title">Analitik & İçgörü</h1>
+              <p class="page-sub">3 aylık satıştan haftalık tahmin · veriye dayalı içgörüler</p>
+            </div>
+            <div class="flex items-center gap-1 p-1 rounded-lg" style="background: var(--bg-2); border:1px solid var(--line)">
+              <button id="analyticsDays30" onclick="setAnalyticsDays(30)" class="analytics-days-btn px-3 py-1.5 text-xs rounded-md" style="background: var(--ink); color: white;">30 gün</button>
+              <button id="analyticsDays90" onclick="setAnalyticsDays(90)" class="analytics-days-btn px-3 py-1.5 text-xs rounded-md text-[var(--text-2)]">90 gün</button>
+              <button id="analyticsDays365" onclick="setAnalyticsDays(365)" class="analytics-days-btn px-3 py-1.5 text-xs rounded-md text-[var(--text-2)]">1 yıl</button>
+            </div>
+          </div>
+
+          <!-- AI insight -->
+          <div class="surface p-5 mb-6 relative overflow-hidden">
+            <div class="absolute right-0 top-0 bottom-0 w-1" style="background: linear-gradient(to bottom, var(--primary), var(--magenta))"></div>
+            <div class="flex items-start gap-3">
+              <div class="logo-orb shrink-0" style="width:32px;height:32px;border-radius:9px"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="ai-tag">İÇGÖRÜ</span>
+                  <span id="analyticsInsightTime" class="text-[10px] text-[var(--text-3)] mono">yükleniyor</span>
+                </div>
+                <p id="analyticsInsightText" class="text-[15px] text-[var(--ink)] leading-relaxed">
+                  Analitik veriler yükleniyor…
+                </p>
+                <div class="flex items-center gap-2 mt-3 flex-wrap">
+                  <button onclick="sendQuestion('Trendyol son 30 gün performansı'); switchTab('chat');" class="pill">Trendyol detayı</button>
+                  <button onclick="sendQuestion('Önümüzdeki hafta için stok önerileri'); switchTab('chat');" class="pill">Stok tahmini</button>
+                  <button class="pill">PDF olarak indir</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- charts -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div class="surface p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="font-semibold">Satış Trendi</div>
+                  <div class="text-xs text-[var(--text-2)]">Son 30 gün · günlük ciro</div>
+                </div>
+                <div class="text-right">
+                  <div id="analyticsTotalCiro" class="text-xl font-bold text-[var(--ink)]">—</div>
+                  <div class="text-xs" style="color:var(--success)">toplam ciro</div>
+                </div>
+              </div>
+              <div class="h-64"><canvas id="trendChart"></canvas></div>
+            </div>
+            <div class="surface p-5">
+              <div class="font-semibold mb-1">Kanal Dağılımı</div>
+              <div class="text-xs text-[var(--text-2)] mb-4">Toplam ciro payı</div>
+              <div class="h-44"><canvas id="channelChart"></canvas></div>
+              <div class="space-y-1.5 text-xs mt-4" id="analyticsChannelList">
+                <div class="text-[var(--text-2)]">Yükleniyor…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="surface p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="font-semibold">En Çok Satan Ürünler</div>
+              <button onclick="sendQuestion('En çok satan 10 ürün ve toplam ciroları'); switchTab('chat');" class="text-xs text-[var(--primary)] font-medium hover:underline">Chat'te derinleştir →</button>
+            </div>
+            <div id="topProducts" class="space-y-3"></div>
+          </div>
+
+          <!-- forecast -->
+          <div class="surface p-5 mt-4">
+            <div class="flex items-center justify-between mb-1">
+              <div>
+                <div class="font-semibold flex items-center gap-2">Tahmin · Önümüzdeki Hafta <span class="ai-tag">AI</span></div>
+                <div class="text-xs text-[var(--text-2)]">Geçmiş 3 aylık veriye dayanır</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-2 mt-4" id="forecastGrid"></div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ╔══ CHAT ═════════════════════════════════════════════════ -->
+      <section id="tab-chat" class="tab-panel absolute inset-0 flex-col hidden">
+        <div id="chatArea" class="flex-1 overflow-y-auto px-6 py-8">
+          <div id="messages" class="max-w-3xl mx-auto space-y-5">
+            <div id="welcomeMsg" class="text-center py-10 fadeUp">
+              <div class="logo-orb mx-auto mb-5" style="width:54px;height:54px;border-radius:16px">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <h2 class="text-2xl font-bold mb-2 tracking-tight">ERP verinizle <span class="serif-i grad-text-orange">sohbet edin</span></h2>
+              <p class="text-[var(--text-2)] max-w-md mx-auto mb-7 text-sm">Doğal dilde sorun, AI SQL'i yazıp veriyi çekip görselleştirsin.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl mx-auto text-left">
+                <button onclick="sendQuestion('Son 30 günün kanal bazlı ciro raporu')" class="surface hover-lift p-4">
+                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-3)] mb-2 mono uppercase tracking-wider">
+                    <span class="w-1 h-1 rounded-full" style="background:var(--primary)"></span>PAZAR YERİ
+                  </div>
+                  <div class="text-sm font-medium">Son 30 günün kanal bazlı ciro raporu</div>
+                </button>
+                <button onclick="sendQuestion('En çok satan 10 ürün ve toplam ciroları')" class="surface hover-lift p-4">
+                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-3)] mb-2 mono uppercase tracking-wider">
+                    <span class="w-1 h-1 rounded-full" style="background:var(--magenta)"></span>ÜRÜN
+                  </div>
+                  <div class="text-sm font-medium">En çok satan 10 ürün ve ciroları</div>
+                </button>
+                <button onclick="sendQuestion('Stok miktarı minimum eşiğin altında olan ürünler')" class="surface hover-lift p-4">
+                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-3)] mb-2 mono uppercase tracking-wider">
+                    <span class="w-1 h-1 rounded-full" style="background:var(--warn)"></span>KRİTİK STOK
+                  </div>
+                  <div class="text-sm font-medium">Minimum eşiğin altındaki ürünler</div>
+                </button>
+                <button onclick="sendQuestion('Son 30 günde en çok iade edilen ürünler ve nedenleri')" class="surface hover-lift p-4">
+                  <div class="flex items-center gap-2 text-[10px] text-[var(--text-3)] mb-2 mono uppercase tracking-wider">
+                    <span class="w-1 h-1 rounded-full" style="background:#84B400"></span>İADE
+                  </div>
+                  <div class="text-sm font-medium">En çok iade edilen ürünler ve nedenleri</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 pb-5 pt-2 shrink-0">
+          <div class="max-w-3xl mx-auto">
+            <div class="flex items-center gap-2 mb-3 flex-wrap">
+              <button onclick="sendQuestion('Bugünkü siparişler')" class="pill">Bugünkü siparişler</button>
+              <button onclick="sendQuestion('Kritik stok seviyesindeki ürünler')" class="pill">Kritik stok</button>
+              <button onclick="sendQuestion('Geciken kargolar')" class="pill">Geciken kargolar</button>
+              <button onclick="sendQuestion('Trendyol aylık ciro trendi')" class="pill">Trendyol trend</button>
+            </div>
+            <div class="surface p-2 transition-all">
+              <div class="flex items-end gap-2">
+                <textarea id="questionInput" rows="1"
+                  placeholder="KOBİ AI'a bir şey sorun… (Enter: gönder, Shift+Enter: yeni satır)"
+                  class="flex-1 py-2.5 px-3 bg-transparent outline-none placeholder-[var(--text-3)] resize-none text-sm leading-relaxed max-h-40 overflow-y-auto"
+                  onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+                <button title="Sesli giriş" class="text-[var(--text-3)] hover:text-[var(--ink)] p-2 rounded-lg hover:bg-[var(--bg-2)]">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 11-14 0m7 7v3m-4 0h8M12 14a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                </button>
+                <button id="sendBtn" onclick="sendMessage()" class="send-fab">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="text-center text-[11px] text-[var(--text-3)] mt-2">KOBİ AI hata yapabilir. Önemli bilgileri doğrulayın.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CUSTOMER  (guest)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="customerView" class="view view-flex h-screen w-screen overflow-hidden">
+  <div class="mesh" style="opacity:0.5">
+    <div class="blob b1"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <main class="relative z-10 flex-1 flex flex-col max-w-2xl mx-auto w-full">
+    <header class="px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="logo-orb"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+        <div>
+          <div class="font-bold">KOBİ AI Destek</div>
+          <div class="text-xs flex items-center gap-1.5" style="color:var(--success)"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--success)"></span> Çevrimiçi · 7/24</div>
+        </div>
+      </div>
+      <button onclick="showLanding()" class="btn-ghost px-3 py-1.5 text-xs">← Ana Sayfa</button>
+    </header>
+
+    <div class="px-6 mb-3">
+      <h1 class="text-xl font-bold mb-1 tracking-tight">Siparişinizi <span class="serif-i" style="color:var(--primary)">sorgulayın</span></h1>
+      <p class="text-sm text-[var(--text-2)]">Sipariş numaranızı veya ad-soyadınızı yazın, 7/24 yardımcı olalım.</p>
+    </div>
+
+    <div id="customerChatArea" class="flex-1 overflow-y-auto px-6 py-3">
+      <div id="customerMessages" class="space-y-4">
+        <div class="flex gap-3 fadeUp">
+          <div class="logo-orb shrink-0" style="width:32px;height:32px;border-radius:9px"><svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+          <div class="flex-1">
+            <div class="bubble-ai inline-block max-w-full">Merhaba 👋 KOBİ AI destek asistanınız. <strong>Sipariş numaranızı</strong> veya <strong>adınızı</strong> yazarak başlayabilirsiniz.</div>
+            <div class="flex flex-wrap gap-2 mt-2.5">
+              <button onclick="sendCustomerQuestion('Siparişim nerede?')" class="pill">Siparişim nerede?</button>
+              <button onclick="sendCustomerQuestion('İade nasıl yapılır?')" class="pill">İade nasıl yapılır?</button>
+              <button onclick="sendCustomerQuestion('Kargo gecikme durumu')" class="pill">Kargo gecikme</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="surface p-4 flex items-center gap-4 fadeUp" style="animation-delay:.15s">
+          <a href="https://t.me/kobii_ai_bot" target="_blank" class="shrink-0 w-32 h-32 rounded-xl p-1 flex items-center justify-center" style="background: var(--ink)">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://t.me/kobii_ai_bot&bgcolor=0A0A0A&color=FFFFFF&margin=2" alt="QR" class="w-full h-full rounded-lg" />
+          </a>
+          <div class="flex-1">
+            <div class="font-semibold text-sm mb-1">Telegram'dan da ulaşabilirsiniz</div>
+            <p class="text-xs text-[var(--text-2)] leading-relaxed">QR kodu okutarak Telegram botumuzla anında sohbet başlatın.</p>
+            <a href="https://t.me/kobii_ai_bot" target="_blank" class="btn-ghost mt-2 text-xs py-1.5 inline-flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" style="color:#229ED9" fill="currentColor" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+              @kobii_ai_bot — Telegram'da Aç
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 pb-5">
+      <div class="surface p-2">
+        <div class="flex items-end gap-2">
+          <textarea id="customerInput" rows="1" placeholder="Sipariş no, adınız veya sorunuz…"
+            class="flex-1 py-2.5 px-3 bg-transparent outline-none placeholder-[var(--text-3)] resize-none text-sm max-h-32"
+            onkeydown="handleCustomerKey(event)" oninput="autoResize(this)"></textarea>
+          <button onclick="sendCustomerMessage()" class="send-fab">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19V5m0 0l-7 7m7-7l7 7"/></svg>
+          </button>
+        </div>
+      </div>
+      <p class="text-center text-[11px] text-[var(--text-3)] mt-2">Mesajlarınız anonim olarak işlenir.</p>
+    </div>
+  </main>
+</div>
+
+
+<script>
+// Tema toggle
+function toggleTheme() {
+  window.location.href = window.location.pathname.replace('index.html','').replace(/\/$/, '') + '/index-dark.html';
+}
+</script><script src="/static/app.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,47 @@
+# ============================================================
+# KOBİ AI Platform — Python Bağımlılıkları
+# pip install -r requirements.txt
+# ============================================================
+
+# ─── Web Framework ───────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.12
+pydantic==2.10.3
+
+# ─── OpenAI ──────────────────────────────────────────────────
+openai==1.57.2
+
+# ─── SQLite (dahili, kurulum gerekmez) ───────────────────────
+# Python stdlib — ek paket yok
+
+# ─── ChromaDB (Vector Store — Docker gerektirmez) ────────────
+chromadb==0.5.23
+
+# ─── JWT Auth ────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+
+# ─── LangGraph (Analytical Multi-Agent) ──────────────────────
+langgraph==0.2.60
+langchain-core==0.3.25
+
+# ─── Fuzzy Matching (Entity Cache) ───────────────────────────
+rapidfuzz>=3.10.1
+
+# ─── Zamanlayıcı (APScheduler) ───────────────────────────────
+apscheduler==3.10.4
+
+# ─── HTTP İstemcisi (Telegram) ───────────────────────────────
+httpx==0.27.2
+
+# ─── Graph (Schema ilişkileri — manual_schema.py) ────────────
+networkx==3.4.2
+
+# ─── Yardımcılar ─────────────────────────────────────────────
+python-dotenv==1.0.1
+requests==2.32.3
+
+# ─── Opsiyonel: Google TTS/STT ───────────────────────────────
+# Sesli mod kullanmak istersen uncomment et:
+# google-cloud-texttospeech==2.17.2
+# google-cloud-speech==2.27.0
