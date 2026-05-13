@@ -232,6 +232,7 @@ CREATE TABLE IF NOT EXISTS BILDIRIMLER (
     tip                  TEXT,
     baslik               TEXT,
     mesaj                TEXT,
+    yanit                TEXT,
     hedef                TEXT DEFAULT 'yonetici',
     okundu               INTEGER DEFAULT 0,
     telegram_gonderildi  INTEGER DEFAULT 0,

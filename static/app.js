@@ -616,17 +616,19 @@ async function fillConversations() {
         const tarih = n.olusturma_tarihi ? new Date(n.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
         return {
           id: 'tg_' + n.id,
-          name: (n.baslik || 'Telegram').replace('Bot: ', ''),
+          name: (n.baslik || 'Telegram'),
           channel: 'tg',
           last: soru,
           time: tarih,
           needsHuman: false,
           unread: i === 0 ? 1 : 0,
+          yanit: n.yanit || null,
           _raw: n,
         };
       });
   } catch(e) { /* API erişilemezse sadece fake göster */ }
 
+  window._realConvs = realConvs;
   const allConvs = [...realConvs, ...fakeConversations];
   list.innerHTML = allConvs.map((c, i) => convRowHtml(c, i, i === 0)).join('');
   openThread(allConvs[0]?.id || 'c1');
@@ -653,8 +655,10 @@ function openThread(id, rowEl) {
   document.querySelectorAll('.conv-row').forEach(r => r.classList.toggle('active', r.dataset.conv === id));
   // Gerçek Telegram konuşması mı yoksa fake mi?
   const isTg = id.startsWith('tg_');
+  // realConvs global'den bul
+  const _tgConv = isTg ? (window._realConvs || []).find(x => x.id === id) : null;
   const c = isTg
-    ? (() => { const el = document.querySelector(`[data-conv="${id}"]`); return el ? { name: el.querySelector('.font-semibold')?.textContent || 'Telegram', channel:'tg', needsHuman:false, id } : null; })()
+    ? (_tgConv || (() => { const el = document.querySelector(`[data-conv="${id}"]`); return el ? { name: el.querySelector('.font-semibold')?.textContent || 'Telegram', channel:'tg', needsHuman:false, id } : null; })())
     : fakeConversations.find(x => x.id === id);
   if (!c) return;
   const channelLabel = { wa:'WhatsApp', tg:'Telegram', web:'Web Chat', ig:'Instagram' }[c.channel] || 'Telegram';
@@ -675,17 +679,32 @@ function openThread(id, rowEl) {
 
   // Gerçek Telegram mesajını göster
   if (isTg) {
-    const notifEl = document.querySelector(`[data-conv="${id}"]`);
-    const lastText = notifEl?.querySelector('.text-xs')?.textContent || '';
+    const soru = c?.last || '';
+    const yanit = c?.yanit || null;
+    const initials = (c?.name||'TG').split(' ').map(n=>n[0]).join('').slice(0,2);
+    const yanıtHTML = yanit
+      ? `<div class="flex justify-end gap-2 items-end">
+           <div class="text-right">
+             <div class="bubble-user max-w-md inline-block" style="white-space:pre-wrap">${escHtml(yanit)}</div>
+             <div class="text-[10px] text-[var(--text-3)] mt-1 mono flex items-center justify-end gap-1.5">
+               <span class="ai-tag" style="font-size:9px; padding:1px 5px">KOBİ AI</span>
+             </div>
+           </div>
+         </div>`
+      : `<div class="flex justify-end gap-2 items-end">
+           <div class="text-right">
+             <div class="bubble-user max-w-md inline-block text-[var(--text-3)] italic">Yanıt bekleniyor...</div>
+           </div>
+         </div>`;
     body.innerHTML = `
       <div class="flex justify-start gap-2 items-end">
-        <div class="avatar channel-tg" style="width:28px;height:28px;font-size:10px">${(c.name||'TG').split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
-        <div><div class="bubble-customer max-w-md">${escHtml(lastText)}</div></div>
+        <div class="avatar channel-tg" style="width:28px;height:28px;font-size:10px">${initials}</div>
+        <div>
+          <div class="text-[10px] text-[var(--text-3)] mb-1 font-semibold">${escHtml(c?.name||'Telegram')}</div>
+          <div class="bubble-customer max-w-md">${escHtml(soru)}</div>
+        </div>
       </div>
-      <div class="flex justify-end gap-2 items-end">
-        <div class="text-right"><div class="bubble-user max-w-md inline-block">AI tarafından yanıtlandı ✓</div>
-        <div class="text-[10px] text-[var(--text-3)] mt-1 mono flex items-center justify-end gap-1.5"><span class="ai-tag" style="font-size:9px; padding:1px 5px">AI</span></div></div>
-      </div>`;
+      ${yanıtHTML}`;
     body.parentElement.scrollTop = body.parentElement.scrollHeight;
     return;
   }

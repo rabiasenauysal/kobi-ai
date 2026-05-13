@@ -130,6 +130,13 @@ class RerunRequest(BaseModel):
 async def startup_event():
     global rag_service, usage_logger
 
+    # DB migration — yanit kolonu yoksa ekle
+    try:
+        from services.db import execute as _dbexec
+        _dbexec("ALTER TABLE BILDIRIMLER ADD COLUMN yanit TEXT", ())
+    except Exception:
+        pass  # Kolon zaten varsa hata verir, sorun değil
+
     print("\n" + "=" * 70)
     print("KOBİ AI PLATFORM — WEB SERVER BAŞLATILIYOR")
     print("=" * 70)

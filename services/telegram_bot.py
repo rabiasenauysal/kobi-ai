@@ -111,9 +111,10 @@ async def handle_update(update: dict) -> Optional[str]:
         return None
 
     # ── Her gelen mesajı DB'ye kaydet (dashboard'da görünsün) ─────────────────
+    _bildirim_id = None
     try:
-        from services.db import execute as db_exec
-        db_exec(
+        from services.db import execute_lastrowid as db_insert, execute as db_exec
+        _bildirim_id = db_insert(
             """INSERT INTO BILDIRIMLER (tip, baslik, mesaj, hedef)
                VALUES (?,?,?,?)""",
             ("telegram_soru", full_name, user_text, chat_id)
@@ -267,6 +268,19 @@ async def handle_update(update: dict) -> Optional[str]:
             reply_text = reply_text[:3700] + "\n\n_...devamı için dashboard'u ziyaret edin._"
 
         send_message(reply_text, chat_id=chat_id)
+
+        # AI yanıtını DB'deki kaydı güncelle
+        if _bildirim_id:
+            try:
+                from services.db import execute as db_exec
+                # Markdown işaretlerini temizle
+                clean_reply = reply_text.replace("*", "").replace("_", "").replace("`", "")
+                db_exec(
+                    "UPDATE BILDIRIMLER SET yanit=? WHERE id=?",
+                    (clean_reply[:800], _bildirim_id)
+                )
+            except Exception:
+                pass
 
         return reply_text
 
