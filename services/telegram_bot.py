@@ -224,7 +224,28 @@ async def handle_update(update: dict) -> Optional[str]:
         )
 
         if isinstance(result, dict):
-            reply_text = result.get("explanation") or result.get("answer") or result.get("message") or str(result)
+            answer  = result.get("answer", "")
+            data    = result.get("data") or []
+            columns = result.get("columns") or []
+
+            # Veri varsa tablo formatında göster
+            if data and columns:
+                lines = [f"📊 *{answer}*\n"]
+                for row in data[:15]:  # max 15 satır
+                    parts = []
+                    for col in columns:
+                        val = row.get(col, "")
+                        if isinstance(val, float):
+                            val = f"{val:,.2f}"
+                        elif isinstance(val, int):
+                            val = f"{val:,}"
+                        parts.append(f"*{col}:* {val}")
+                    lines.append(" | ".join(parts))
+                if len(data) > 15:
+                    lines.append(f"\n_...ve {len(data)-15} kayıt daha. Tamamı için dashboard'u ziyaret edin._")
+                reply_text = "\n".join(lines)
+            else:
+                reply_text = answer or result.get("message") or "Sonuç bulunamadı."
         else:
             reply_text = str(result)
 
