@@ -27,7 +27,6 @@ COPY static/            static/
 COPY routers/           routers/
 COPY db/                db/
 COPY api.py             .
-COPY pipeline_routes.py .
 COPY main.py            .
 COPY start.sh           .
 

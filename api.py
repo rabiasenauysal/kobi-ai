@@ -16,7 +16,6 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from pipeline_routes import router as pipeline_router
 from routers.auth_routes import router as auth_router
 from routers.dashboard_routes import router as dashboard_router
 from routers.customer_routes import router as customer_router
@@ -36,7 +35,6 @@ app = FastAPI(
 )
 
 # Routers
-app.include_router(pipeline_router)
 app.include_router(auth_router)
 app.include_router(dashboard_router)
 app.include_router(customer_router)
