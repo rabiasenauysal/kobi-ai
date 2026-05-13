@@ -5,9 +5,10 @@
 **AI Akademi Hackathon 2026**
 
 [![Live Demo](https://img.shields.io/badge/🌐_Canlı_Demo-kobi--ai-brightgreen?style=for-the-badge)](https://kobi-ai-production.up.railway.app)
+[![Telegram Bot](https://img.shields.io/badge/Telegram-@mikroai__bot-blue?style=for-the-badge&logo=telegram)](https://t.me/mikroai_bot)
 [![GitHub](https://img.shields.io/badge/GitHub-kobi--ai-black?style=for-the-badge&logo=github)](https://github.com/rabiasenauysal/kobi-ai)
-[![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+
+🌐 **[https://kobi-ai-production.up.railway.app](https://kobi-ai-production.up.railway.app)**
 
 *KOBİ'lerin günlük operasyonlarını yapay zeka ile otomatikleştiren, Türkçe doğal dil anlayan entegre platform.*
 
@@ -21,6 +22,23 @@
 |---|---|
 | **Problem** | KOBİ'ler sipariş, kargo, stok ve müşteri iletişimini birbirinden kopuk, manuel araçlarla yönetiyor. |
 | **Çözüm** | Telegram botu, canlı dashboard ve doğal dil SQL asistanıyla tüm operasyonu tek platformda otomatikleştiriyoruz. |
+
+---
+
+## 📸 Ekran Görüntüleri
+
+<div align="center">
+
+### 📊 Ana Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
+
+### 💬 Telegram Bot & Sohbet Geçmişi
+![Telegram](docs/screenshots/telegram.png)
+
+### 📦 Sipariş & Kargo Takibi
+![Siparisler](docs/screenshots/siparisler.png)
+
+</div>
 
 ---
 
@@ -57,44 +75,29 @@ FastAPI Backend  ←→  Railway Cloud (Production)
 ## 🚀 Yerel Kurulum
 
 ```bash
-# 1. Repoyu klonla
 git clone https://github.com/rabiasenauysal/kobi-ai.git
 cd kobi-ai
-
-# 2. Bağımlılıkları kur
 pip install -r requirements.txt
-
-# 3. .env dosyası oluştur
 cp .env.example .env
 # OPENAI_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_ADMIN_CHAT_ID ekle
-
-# 4. ChromaDB schema embedding (bir kez)
 python main.py setup
-
-# 5. Başlat
 python main.py web
 # → http://localhost:8000
 ```
 
 ---
 
-## ☁️ Railway ile Deploy Edildi
+## ☁️ Canlı Demo (Railway)
 
-Proje Railway üzerinde containerize edilmiş olarak çalışmaktadır.
+Proje Railway üzerinde containerize edilmiş olarak **aktif şekilde çalışmaktadır**.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template)
-
-```env
-OPENAI_API_KEY=sk-...
-TELEGRAM_BOT_TOKEN=...
-TELEGRAM_ADMIN_CHAT_ID=...
-```
+🔗 **[https://kobi-ai-production.up.railway.app](https://kobi-ai-production.up.railway.app)**
 
 ---
 
 ## 💬 Telegram Bot
 
-**@mikroai_bot** — Telegram'da arayın ve test edin!
+**[@mikroai_bot](https://t.me/mikroai_bot)** — Telegram'da arayın ve test edin!
 
 ```
 /start  → Karşılama & yardım menüsü
@@ -103,11 +106,9 @@ TELEGRAM_ADMIN_CHAT_ID=...
 /kargo  → Geciken kargolar
 /gorev  → Bugünkü aktif görevler
 
-Doğal dil örnekleri:
-  "Bugün kaç sipariş geldi?"
-  "Trendyol'dan son 30 günün cirosu ne?"
-  "Hangi ürünler kritik stok seviyesinde?"
-  "Bekleyen siparişleri listele"
+Doğal dil: "Bugün kaç sipariş geldi?"
+           "Trendyol'dan son 30 günün cirosu?"
+           "Hangi ürünler kritik stok seviyesinde?"
 ```
 
 ---
@@ -116,31 +117,27 @@ Doğal dil örnekleri:
 
 ```
 ├── api.py                    # FastAPI uygulama + tüm route'lar
-├── main.py                   # CLI giriş noktası (web/setup/seed)
-├── Dockerfile                # Railway container tanımı
+├── main.py                   # CLI giriş noktası
+├── Dockerfile                # Railway container
 ├── services/
-│   ├── rag_service.py        # RAG-First sorgu servisi (konuşma hafızası)
+│   ├── rag_service.py        # RAG-First + konuşma hafızası
 │   ├── sql_agent.py          # LangGraph Text-to-SQL ajanı
 │   ├── telegram_bot.py       # Telegram webhook handler
 │   ├── alert_service.py      # Kargo/stok/görev bildirimleri
-│   ├── scheduler.py          # APScheduler zamanlanmış görevler
-│   └── chromadb_store.py     # Vector store (self-healing)
-├── routers/
-│   ├── dashboard_routes.py   # KPI, sipariş, kargo, stok, görev API'leri
-│   └── telegram_routes.py    # Telegram webhook endpoint'leri
+│   └── scheduler.py          # APScheduler zamanlanmış görevler
 ├── static/
 │   ├── index.html            # Tek sayfa uygulama
 │   └── app.js                # Frontend logic
 └── db/
-    ├── kobi_demo.db          # Demo SQLite veritabanı
-    └── seed.py               # Sentetik veri üretici (8.600+ kayıt)
+    ├── kobi_demo.db          # Demo SQLite (8.600+ kayıt)
+    └── seed.py               # Sentetik veri üretici
 ```
 
 ---
 
 <div align="center">
 
-*Demo verisi tamamen sentetiktir. Gerçek kişi, işletme veya işlem bilgisi içermez.*
+*Demo verisi tamamen sentetiktir. Gerçek kişi veya işletme bilgisi içermez.*
 
 **Geliştirici:** Rabia Sena Uysal · AI Akademi Hackathon 2026
 
