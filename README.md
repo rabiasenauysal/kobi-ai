@@ -24,25 +24,6 @@
 
 ---
 
-## 📸 Ekran Görüntüleri
-
-<div align="center">
-
-### 📊 Ana Dashboard
-![Dashboard](docs/screenshots/dashboard.png)
-
-### 💬 Telegram Bot & Sohbet Geçmişi
-![Telegram](docs/screenshots/telegram.png)
-
-### 📦 Sipariş & Kargo Takibi
-![Siparisler](docs/screenshots/siparisler.png)
-
-</div>
-
-> 💡 **Canlı demo:** [https://kobi-ai-production.up.railway.app](https://kobi-ai-production.up.railway.app)
-
----
-
 ## ✅ Kapsanan 6 Senaryo
 
 | # | Senaryo | Nasıl Çalışır |
