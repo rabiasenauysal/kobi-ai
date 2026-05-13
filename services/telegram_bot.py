@@ -212,13 +212,19 @@ async def handle_update(update: dict) -> Optional[str]:
         pass
 
     try:
-        from services.sql_agent import SQLAgent
+        from services.rag_service import RAGService
         s = get_settings()
-        agent = SQLAgent(api_key=s.openai_api_key, model=s.chat_model)
-        result = await agent.arun(user_text)
+        rag = RAGService()
+        result = rag.query(
+            question=user_text,
+            session_id=f"tg_{chat_id}",
+            analytical=False,
+            analytical_depth="low",
+            already_clarified=True,
+        )
 
         if isinstance(result, dict):
-            reply_text = result.get("explanation") or result.get("answer") or str(result)
+            reply_text = result.get("explanation") or result.get("answer") or result.get("message") or str(result)
         else:
             reply_text = str(result)
 
