@@ -609,23 +609,36 @@ async function fillConversations() {
   try {
     const res = await fetch(API + '/api/notifications?limit=30');
     const json = await res.json();
-    realConvs = (json.notifications || [])
+    // chat_id (hedef) bazında grupla — her kişi tek kart
+    const grouped = {};
+    (json.notifications || [])
       .filter(n => n.tip === 'telegram_soru')
-      .map((n, i) => {
-        const soru = (n.mesaj || '').replace(/^S:\s*/, '').split('\n')[0];
-        const tarih = n.olusturma_tarihi ? new Date(n.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
-        return {
-          id: 'tg_' + n.id,
-          name: (n.baslik || 'Telegram'),
-          channel: 'tg',
-          last: soru,
-          time: tarih,
-          needsHuman: false,
-          unread: i === 0 ? 1 : 0,
-          yanit: n.yanit || null,
-          _raw: n,
-        };
+      .forEach(n => {
+        const key = n.hedef || n.id;
+        if (!grouped[key]) grouped[key] = { msgs: [], name: n.baslik || 'Telegram', hedef: key };
+        grouped[key].msgs.push(n);
       });
+
+    realConvs = Object.values(grouped).map((g, i) => {
+      // Mesajları eskiden yeniye sırala
+      g.msgs.sort((a, b) => a.id - b.id);
+      const latest = g.msgs[g.msgs.length - 1];
+      const soru = (latest.mesaj || '').replace(/^S:\s*/, '').split('\n')[0];
+      const tarih = latest.olusturma_tarihi
+        ? new Date(latest.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})
+        : '';
+      return {
+        id: 'tg_' + g.hedef,
+        name: g.name,
+        channel: 'tg',
+        last: soru,
+        time: tarih,
+        needsHuman: false,
+        unread: i === 0 ? g.msgs.filter(m => !m.yanit).length : 0,
+        msgs: g.msgs,   // tüm mesaj geçmişi
+        _raw: latest,
+      };
+    });
   } catch(e) { /* API erişilemezse sadece fake göster */ }
 
   window._realConvs = realConvs;
@@ -677,34 +690,42 @@ function openThread(id, rowEl) {
     </div>`;
   const body = document.getElementById('threadBody');
 
-  // Gerçek Telegram mesajını göster
+  // Gerçek Telegram konuşma geçmişini göster
   if (isTg) {
-    const soru = c?.last || '';
-    const yanit = c?.yanit || null;
     const initials = (c?.name||'TG').split(' ').map(n=>n[0]).join('').slice(0,2);
-    const yanıtHTML = yanit
-      ? `<div class="flex justify-end gap-2 items-end">
-           <div class="text-right">
-             <div class="bubble-user max-w-md inline-block" style="white-space:pre-wrap">${escHtml(yanit)}</div>
-             <div class="text-[10px] text-[var(--text-3)] mt-1 mono flex items-center justify-end gap-1.5">
-               <span class="ai-tag" style="font-size:9px; padding:1px 5px">KOBİ AI</span>
-             </div>
-           </div>
-         </div>`
-      : `<div class="flex justify-end gap-2 items-end">
-           <div class="text-right">
-             <div class="bubble-user max-w-md inline-block text-[var(--text-3)] italic">Yanıt bekleniyor...</div>
-           </div>
-         </div>`;
-    body.innerHTML = `
-      <div class="flex justify-start gap-2 items-end">
-        <div class="avatar channel-tg" style="width:28px;height:28px;font-size:10px">${initials}</div>
-        <div>
-          <div class="text-[10px] text-[var(--text-3)] mb-1 font-semibold">${escHtml(c?.name||'Telegram')}</div>
-          <div class="bubble-customer max-w-md">${escHtml(soru)}</div>
+    const msgs = c?.msgs || (c?._raw ? [c._raw] : []);
+
+    const bubbles = msgs.map(m => {
+      const soru = (m.mesaj || '').replace(/^S:\s*/, '');
+      const tarih = m.olusturma_tarihi
+        ? new Date(m.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})
+        : '';
+      const yanit = m.yanit || null;
+
+      return `
+        <div class="flex justify-start gap-2 items-end">
+          <div class="avatar channel-tg" style="width:28px;height:28px;font-size:10px">${initials}</div>
+          <div>
+            <div class="bubble-customer max-w-md" style="white-space:pre-wrap">${escHtml(soru)}</div>
+            <div class="text-[10px] text-[var(--text-3)] mt-1 mono">${tarih}</div>
+          </div>
         </div>
-      </div>
-      ${yanıtHTML}`;
+        ${yanit
+          ? `<div class="flex justify-end gap-2 items-end">
+               <div class="text-right">
+                 <div class="bubble-user max-w-md inline-block" style="white-space:pre-wrap">${escHtml(yanit)}</div>
+                 <div class="text-[10px] text-[var(--text-3)] mt-1 mono flex items-center justify-end gap-1.5">
+                   <span class="ai-tag" style="font-size:9px;padding:1px 5px">KOBİ AI</span>${tarih}
+                 </div>
+               </div>
+             </div>`
+          : `<div class="flex justify-end">
+               <div class="bubble-user max-w-xs inline-block text-[var(--text-3)] italic text-xs">Yanıt işleniyor...</div>
+             </div>`
+        }`;
+    }).join('');
+
+    body.innerHTML = bubbles || '<div class="text-center text-[var(--text-3)] text-sm py-8">Henüz mesaj yok</div>';
     body.parentElement.scrollTop = body.parentElement.scrollHeight;
     return;
   }

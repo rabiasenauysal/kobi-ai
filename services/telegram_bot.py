@@ -12,6 +12,16 @@ from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
+# ── Global RAGService singleton (hafıza korunur) ──────────────────────────────
+_rag_service = None
+
+def _get_rag():
+    global _rag_service
+    if _rag_service is None:
+        from services.rag_service import RAGService
+        _rag_service = RAGService()
+    return _rag_service
+
 
 def send_message(text: str, chat_id: Optional[str] = None, parse_mode: str = "Markdown") -> bool:
     """Admin kanalına veya belirtilen chat_id'ye mesaj gönder."""
@@ -226,9 +236,7 @@ async def handle_update(update: dict) -> Optional[str]:
         pass
 
     try:
-        from services.rag_service import RAGService
-        s = get_settings()
-        rag = RAGService()
+        rag = _get_rag()
         result = rag.query(
             question=user_text,
             session_id=f"tg_{chat_id}",
