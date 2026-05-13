@@ -569,41 +569,68 @@ function searchConvs() {
   });
 }
 
-function fillConversations() {
-  const list = document.getElementById('convList');
-  list.innerHTML = fakeConversations.map((c, i) => {
-    const channelClass = c.channel === 'wa' ? 'channel-wa' : c.channel === 'tg' ? 'channel-tg' : c.channel === 'ig' ? 'channel-ig' : 'channel-web';
-    const channelIcon = {
-      wa: '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.504 5.244l-.999 3.648 3.984-.591z"/></svg>',
-      tg: '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>',
-      web: '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-      ig: '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>',
-    }[c.channel];
-    const aiBadge = c.needsHuman
-      ? '<span class="badge badge-orange" style="font-size:9px; padding:1px 6px">İNSAN</span>'
-      : '<span class="ai-tag" style="font-size:9px; padding:1px 6px">AI</span>';
-    const unread = c.unread ? `<span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style="background:var(--primary)">${c.unread}</span>` : '';
-    return `
-      <div class="conv-row ${i === 0 ? 'active' : ''}" data-conv="${c.id}" onclick="openThread('${c.id}', this)">
-        <div class="flex items-start gap-3">
-          <div class="avatar ${channelClass} relative">${c.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
-            <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${channelClass} flex items-center justify-center border-2 border-[var(--surface)]">${channelIcon}</div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <div class="text-sm font-semibold truncate">${c.name}</div>
-              <div class="text-[10px] text-[var(--text-3)] mono ml-auto">${c.time}</div>
-            </div>
-            <div class="text-xs text-[var(--text-2)] truncate mt-0.5">${c.last}</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              ${aiBadge}
-              ${unread}
-            </div>
-          </div>
+const tgIcon = '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>';
+
+function convRowHtml(c, i, isActive) {
+  const channelClass = c.channel === 'wa' ? 'channel-wa' : c.channel === 'tg' ? 'channel-tg' : c.channel === 'ig' ? 'channel-ig' : 'channel-web';
+  const channelIcon = {
+    wa: '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.504 5.244l-.999 3.648 3.984-.591z"/></svg>',
+    tg: tgIcon,
+    web: '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+    ig: '<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>',
+  }[c.channel] || tgIcon;
+  const aiBadge = c.needsHuman
+    ? '<span class="badge badge-orange" style="font-size:9px; padding:1px 6px">İNSAN</span>'
+    : '<span class="ai-tag" style="font-size:9px; padding:1px 6px">AI</span>';
+  const unread = c.unread ? `<span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style="background:var(--primary)">${c.unread}</span>` : '';
+  return `
+    <div class="conv-row ${isActive ? 'active' : ''}" data-conv="${c.id}" onclick="openThread('${c.id}', this)">
+      <div class="flex items-start gap-3">
+        <div class="avatar ${channelClass} relative">${(c.name||'?').split(' ').map(n=>n[0]).join('').slice(0,2)}
+          <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${channelClass} flex items-center justify-center border-2 border-[var(--surface)]">${channelIcon}</div>
         </div>
-      </div>`;
-  }).join('');
-  openThread('c1');
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <div class="text-sm font-semibold truncate">${c.name}</div>
+            <div class="text-[10px] text-[var(--text-3)] mono ml-auto">${c.time}</div>
+          </div>
+          <div class="text-xs text-[var(--text-2)] truncate mt-0.5">${c.last}</div>
+          <div class="flex items-center gap-1.5 mt-1.5">${aiBadge}${unread}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function fillConversations() {
+  const list = document.getElementById('convList');
+
+  // Gerçek Telegram mesajlarını çek
+  let realConvs = [];
+  try {
+    const res = await fetch(API + '/api/notifications?limit=30');
+    const json = await res.json();
+    realConvs = (json.notifications || [])
+      .filter(n => n.tip === 'telegram_soru')
+      .map((n, i) => {
+        const lines = (n.mesaj || '').split('\n');
+        const soru = (lines[0] || '').replace(/^S:\s*/, '');
+        const tarih = n.olusturma_tarihi ? new Date(n.olusturma_tarihi).toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'}) : '';
+        return {
+          id: 'tg_' + n.id,
+          name: (n.baslik || 'Telegram').replace('Bot: ', ''),
+          channel: 'tg',
+          last: soru,
+          time: tarih,
+          needsHuman: false,
+          unread: i === 0 ? 1 : 0,
+          _raw: n,
+        };
+      });
+  } catch(e) { /* API erişilemezse sadece fake göster */ }
+
+  const allConvs = [...realConvs, ...fakeConversations];
+  list.innerHTML = allConvs.map((c, i) => convRowHtml(c, i, i === 0)).join('');
+  openThread(allConvs[0]?.id || 'c1');
 }
 
 let _commsFilter = 'all';
@@ -619,35 +646,23 @@ function filterComms(type) {
               : type === 'ai'    ? fakeConversations.filter(c => c.ai && !c.needsHuman)
               : fakeConversations;
   const list = document.getElementById('convList');
-  list.innerHTML = convs.map((c, i) => {
-    const channelClass = c.channel === 'wa' ? 'channel-wa' : c.channel === 'tg' ? 'channel-tg' : c.channel === 'ig' ? 'channel-ig' : 'channel-web';
-    const channelIcon  = c.channel === 'wa' ? '✓' : c.channel === 'tg' ? '✈' : c.channel === 'ig' ? '◉' : '⌂';
-    const statusBadge  = c.needsHuman ? '<span class="badge badge-orange" style="font-size:9px">İNSAN</span>' : '<span class="ai-tag" style="font-size:9px;padding:1px 6px">AI</span>';
-    const unread = c.unread ? `<span class="ml-auto w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white" style="background:var(--primary)">${c.unread}</span>` : '';
-    return `<div class="conv-row" data-conv="${c.id}" onclick="openThread('${c.id}', this)">
-      <div class="flex items-start gap-3">
-        <div class="avatar ${channelClass} relative">${c.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
-          <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--surface)] flex items-center justify-center border border-[var(--line)] text-[8px]">${channelIcon}</div>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-0.5">${statusBadge}<span class="text-sm font-semibold truncate">${c.name}</span><span class="text-[10px] text-[var(--text-3)] mono ml-auto shrink-0">${c.time}</span>${unread}</div>
-          <div class="text-xs text-[var(--text-2)] truncate">${c.last}</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  list.innerHTML = convs.map((c, i) => convRowHtml(c, i, i === 0)).join('');
   if (convs.length) openThread(convs[0].id);
 }
 
 function openThread(id, rowEl) {
   document.querySelectorAll('.conv-row').forEach(r => r.classList.toggle('active', r.dataset.conv === id));
-  const c = fakeConversations.find(x => x.id === id);
+  // Gerçek Telegram konuşması mı yoksa fake mi?
+  const isTg = id.startsWith('tg_');
+  const c = isTg
+    ? (() => { const el = document.querySelector(`[data-conv="${id}"]`); return el ? { name: el.querySelector('.font-semibold')?.textContent || 'Telegram', channel:'tg', needsHuman:false, id } : null; })()
+    : fakeConversations.find(x => x.id === id);
   if (!c) return;
-  const channelLabel = { wa:'WhatsApp', tg:'Telegram', web:'Web Chat', ig:'Instagram' }[c.channel];
+  const channelLabel = { wa:'WhatsApp', tg:'Telegram', web:'Web Chat', ig:'Instagram' }[c.channel] || 'Telegram';
   const channelClass = c.channel === 'wa' ? 'channel-wa' : c.channel === 'tg' ? 'channel-tg' : c.channel === 'ig' ? 'channel-ig' : 'channel-web';
   document.getElementById('threadHeader').innerHTML = `
     <div class="flex items-center gap-3">
-      <div class="avatar ${channelClass}">${c.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <div class="avatar ${channelClass}">${(c.name||'TG').split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
       <div>
         <div class="text-sm font-semibold">${c.name}</div>
         <div class="text-xs text-[var(--text-3)]">${channelLabel} · #${c.id.toUpperCase()}</div>
@@ -655,10 +670,27 @@ function openThread(id, rowEl) {
     </div>
     <div class="flex items-center gap-2">
       ${c.needsHuman ? '<span class="badge badge-orange">İNSAN MÜDAHALESİ GEREKLİ</span>' : '<span class="ai-tag">AI YÖNETİYOR</span>'}
-      <button class="btn-ghost text-xs py-1.5 px-3" onclick="openOrderInChat('${c.id}')">Sipariş aç</button>
       <button class="btn-ghost text-xs py-1.5 px-3" onclick="takeoverThread('${c.id}')">Devral</button>
     </div>`;
   const body = document.getElementById('threadBody');
+
+  // Gerçek Telegram mesajını göster
+  if (isTg) {
+    const notifEl = document.querySelector(`[data-conv="${id}"]`);
+    const lastText = notifEl?.querySelector('.text-xs')?.textContent || '';
+    body.innerHTML = `
+      <div class="flex justify-start gap-2 items-end">
+        <div class="avatar channel-tg" style="width:28px;height:28px;font-size:10px">${(c.name||'TG').split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+        <div><div class="bubble-customer max-w-md">${escHtml(lastText)}</div></div>
+      </div>
+      <div class="flex justify-end gap-2 items-end">
+        <div class="text-right"><div class="bubble-user max-w-md inline-block">AI tarafından yanıtlandı ✓</div>
+        <div class="text-[10px] text-[var(--text-3)] mt-1 mono flex items-center justify-end gap-1.5"><span class="ai-tag" style="font-size:9px; padding:1px 5px">AI</span></div></div>
+      </div>`;
+    body.parentElement.scrollTop = body.parentElement.scrollHeight;
+    return;
+  }
+
   const thread = fakeThreads[id] || [
     { from:'customer', t: c.last, time: c.time },
     { from:'ai', t: 'Merhaba, size nasıl yardımcı olabilirim?', time: c.time },
